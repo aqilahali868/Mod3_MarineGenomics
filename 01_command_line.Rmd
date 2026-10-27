@@ -1,6 +1,6 @@
 ---
 title: "Workshop 1: Introduction to the Command Line"
-author: "Your Name"
+author: "jc982704"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -15,23 +15,82 @@ knitr::opts_hooks$set(engine = function(options) {
 })
 ```
 
-Notes for [Workshop 1](https://mb5370.bioinformatics.guide/workshop1.html). Run the commands for this workshop in the Terminal, from inside the `command_line` folder:
+Notes for [Workshop 1](https://mb5370.bioinformatics.guide/workshop1.html). 
+Run the commands for this workshop in the Terminal, from inside the `command_line` folder:
 
 ```{bash}
-cd ~/mb5370-workshops/command_line
+cd command_line
 pwd
 ```
 
-Replace the text below each heading with your own notes. Copy each command you run into a bash chunk like the one above.
-
 ## Basic unix commands
+pwd - print working directory e.g., /home/jc982704/mb5370-workshops
+root directory always /
 
-Notes on `pwd`, `ls`, `cd` and how unix commands are put together.
+ls - list all files and folders in directory
+
+unix command format: command, flag, directory
+e.g., 
+```{bash}
+grep '^>' test.fasta.         #find fasta header
+grep KDRNKKNSAK test.fasta    #specified search
+grep -n KDRNKKNSAK test.fasta #line number included
+
+man grep
+```
+where:
+grep (globally search a regular expression and print) 
+KDRNKKNSAK (specific amino acid sequence)
+test.fasta (input directory i.e. file/folder)
+
+fasta header - single-line description/definition line that begins a sequence entry, always begins with ">" followed be Sequence Identifier (SeqID) e.g.,num/chr
+
+Examples of grep flags:
+
+"-i" -> case insensitive match
+
+"-n" -> report line number of matches
+
+"-c" -> report all files that contain the pattern
+
+"-w" -> match whole words only
 
 ## Viewing and searching files
+```{bash}
+cd ~/mb5370-workshops/command_line
+echo $'>fasta_header\nMMGTSRCVILLFALLLWAANAAPPEIHTTRPNVPEEIKRPNSTEIETPAVKQLETPSIFL\nLTTLEVAEADVDSTLETMKDRNKKNSAKLSKIGNNMKSLLSVFSVFGGFLSLLSVVTTTS' > test.fasta
 
-Notes on `cat`, `head`, `grep` and `man`.
+cat test.fasta
+head -2 test.fasta
 
+man cat
+man head
+```
+man - - an interface to the system reference manuals
+cat - concatenate files and print on the standard output
+head - output the first part of files, can be specified with # 
+e.g., -2 for only first 2 lines
+ 
 ## Sequence file formats
 
-Notes on the fasta and fastq formats.
+FASTA: used as "reference" data, no quality scores (assumes to be correct)
+Used for wide variety of sequence types including whole genomes, transcriptomes, nucleotide and proteins
+Format considers 1 or more entries each with a header/title line and sequence
+Multiple entries can be stored in a single file
+>SeqID base_sequence_lines
+
+FASTQ: used for "raw" reads from next generation sequencing experiments, includes a quality score for every base
+Used for Illumina short reads and longer reads by Nanopore or PacBio sequencing
+Format designed for storing sequencing data along quality scores in 4 lines 
+@SeqID base_sequence_line + Description and Quality Score lines
+
+1. Starts with @ and contains a unique identifier for the sequence
+2. Is the sequence itself
+3. Starts with + and almost always nothing else
+4. Contains quality scores. These are encoded using ASCII characters with one character per base.
+
+```{bash}
+#Full list of quality score letters from 0-94
+!\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_\`abcdefghijklmnopqrstuvwxyz{|}~
+```
+
