@@ -14,10 +14,10 @@ knitr::opts_hooks$set(engine = function(options) {
   options
 })
 ```
-
+# MinION 
 Data from a previous MinION run on a culture dominated by a bacterium in the genus Vibrio. The dominant organism has two large chromosomes with sizes around 3.4Mb and 1.8Mb respectively. We also expect some smaller plasmids. At very high coverage it was also revealed that this data contained another bacterium (a Gammaproteobacterium) which was around 100 times less abundant than the Vibrio.
 
-## Redbean assembly
+# Redbean assembly
 - one of the fastest long read genome assemblers
 
 ```{bash}
@@ -30,23 +30,100 @@ cat /pvol/data/amtp4/*_[012]f.fastq > amtp4.fastq
 #run assembly
 wtdbg2 -x ont -g 5m -t 4 -i amtp4.fastq -fo amtp4
 wtpoa-cns -t 4 -i amtp4.ctg.lay.gz -fo amtp4.ctg.fa
+
 #time taken = real 44.070 sec, user 185.530 sec, sys 8.140 sec
 
 ```
 
-Activity: Inspect assembly statistics
-```{r}
+# Activity 1 
+Inspect assembly statistics USING REDBEAN
+```{bash}
+assembly-stats amtp4.ctg.fa
+
+#output
+stats for amtp4.ctg.fa
+sum = 3816931, n = 129, ave = 29588.61, largest = 159610
+N50 = 48075, n = 23 # 
+N60 = 33615, n = 33
+N70 = 28879, n = 45
+N80 = 21464, n = 60
+N90 = 13023, n = 83
+N100 = 2697, n = 129 #
+N_count = 0
+Gaps = 0
 
 ```
+contiguity: n = contig size at which half of all assembles bases reside in contigs of this size or longer (Longest contig = 0) 
+smallest quantitiy at top half of assembly 
+
+completeness (closer to 1 = more ), proportion of estimated genome: assembled genome size/ estimated genome size 
+Core genes 
+
+correctness: 
 
 
-## Flye assembly
+## Run Redbean with higher coverage
+REDO assembly with better coverage depth ()
+Data equivalent to ~20x coverage
+```{bash}
+#run assembly
+cat /pvol/data/amtp4/*.fastq > amtp4_20x.fastq
+wtdbg2 -x ont -g 5m -t 4 -i amtp4_20x.fastq -fo amtp4_20x
+wtpoa-cns -t 4 -i amtp4_20x.ctg.lay.gz -fo amtp4_20x.ctg.fa
 
+#time taken:real 164.938 sec, user 603.150 sec, sys 32.890 sec
+```
 
 ```{bash}
+assembly-stats amtp4_20x.ctg.fa
+#output
+stats for amtp4_20x.ctg.fa
+sum = 7575981, n = 97, ave = 78102.90, largest = 3342848
+N50 = 1764934, n = 2 
+N60 = 1764934, n = 2
+N70 = 98920, n = 4
+N80 = 44062, n = 17
+N90 = 26149, n = 38
+N100 = 4522, n = 97
+N_count = 0
+Gaps = 0
+```
+N50 - 2 contigs required to complete 50% of the whole sequence, usually the largest size genome sequence/ number of base pairs 
+contiguity: n = 
+
+completeness: 
+
+correctness:
+
+# Flye assembly
+
+## Move to Flye folder
+```{bash}
+pwd
+cd ../flye_genome
+pwd
+```
+
+## Run Flye on both datasets 
+```{bash}
+#Make symbolic links to same raw data from redbean
+ln -s ../redbean/amtp4.fastq .
+ln -s ../redbean/amtp4_20x.fastq .
 
 ```
 
+
+# Bandage 
+Depth - average number of reads that cover a given region of the genome sequence e.g., 50x or 100x coverage
+- to assemble a gene : needs overlaps, long reads,account for errors
+e.g., 
+read 1:     xxxx
+read 2:     xxxxxx
+read 3: xxxxxx
+contig: xxxxxxxxxx
+depth = 3, contig = 1
+
+repeat: central or around circle, other contigs "pass through"
 
 ## Assembly graphs with Bandage
 ```{bash}
