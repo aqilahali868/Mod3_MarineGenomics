@@ -1,36 +1,69 @@
 ---
 title: "Workshop 2: Genome Assembly"
-author: "Your Name"
+author: "jc982704"
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-# Bash chunks are a record of commands you ran in the Terminal. Knitting shows
-# them but doesn't run them again.
+# Bash chunks are a record of commands you ran in the Terminal.
+# Knitting shows them but doesn't run them again.
 knitr::opts_hooks$set(engine = function(options) {
   if (options$engine == "bash") options$eval <- FALSE
   options
 })
 ```
 
-Notes for [Workshop 2](https://mb5370.bioinformatics.guide/workshop2.html). Run the commands for this workshop in the Terminal, from inside the folder named under each heading. Copy each command you run into a bash chunk.
+Data from a previous MinION run on a culture dominated by a bacterium in the genus Vibrio. The dominant organism has two large chromosomes with sizes around 3.4Mb and 1.8Mb respectively. We also expect some smaller plasmids. At very high coverage it was also revealed that this data contained another bacterium (a Gammaproteobacterium) which was around 100 times less abundant than the Vibrio.
 
 ## Redbean assembly
+- one of the fastest long read genome assemblers
 
-Commands run in `redbean/`.
+```{bash}
+cd redbean
+pwd
+
+#first 3 files which equates to 12000 reads and around 6x coverage of the target genome
+cat /pvol/data/amtp4/*_[012]f.fastq > amtp4.fastq
+
+#run assembly
+wtdbg2 -x ont -g 5m -t 4 -i amtp4.fastq -fo amtp4
+wtpoa-cns -t 4 -i amtp4.ctg.lay.gz -fo amtp4.ctg.fa
+#time taken = real 44.070 sec, user 185.530 sec, sys 8.140 sec
+
+```
+
+Activity: Inspect assembly statistics
+```{r}
+
+```
+
 
 ## Flye assembly
 
-Commands run in `flye_genome/`.
+
+```{bash}
+
+```
+
 
 ## Assembly graphs with Bandage
+```{bash}
+
+```
 
 ## Assembly quality with QUAST
 
 Commands run in `quast/`.
+```{bash}
+
+```
 
 ## Mystery repeat region (optional)
 
 Commands run in `repeat/`.
+```{bash}
+
+```
+
