@@ -57,13 +57,9 @@ contiguity: n = contig size at which half of all assembles bases reside in conti
 smallest quantitiy at top half of assembly 
 
 completeness (closer to 1 = more ), proportion of estimated genome: assembled genome size/ estimated genome size 
-Core genes 
-
-correctness: 
-
 
 ## Run Redbean with higher coverage
-REDO assembly with better coverage depth ()
+REDO assembly with better coverage depth (number of reads in a contig)
 Data equivalent to ~20x coverage
 ```{bash}
 #run assembly
@@ -76,7 +72,8 @@ wtpoa-cns -t 4 -i amtp4_20x.ctg.lay.gz -fo amtp4_20x.ctg.fa
 
 ```{bash}
 assembly-stats amtp4_20x.ctg.fa
-#output
+```
+## Output
 stats for amtp4_20x.ctg.fa
 sum = 7575981, n = 97, ave = 78102.90, largest = 3342848
 N50 = 1764934, n = 2 
@@ -87,13 +84,13 @@ N90 = 26149, n = 38
 N100 = 4522, n = 97
 N_count = 0
 Gaps = 0
-```
+
+where:
 N50 - 2 contigs required to complete 50% of the whole sequence, usually the largest size genome sequence/ number of base pairs 
-contiguity: n = 
-
-completeness: 
-
-correctness:
+N50 - 50% of sequecnce
+xxxxxxx - number of base paris in nucleotide sequence
+n - congit number
+x - number of congits it took to complete 50% of the seq
 
 # Flye assembly
 
@@ -112,6 +109,61 @@ ln -s ../redbean/amtp4_20x.fastq .
 
 ```
 
+slurm script small
+```{bash}
+sbatch run_flye_small.sh #job 340
+squeue #check status of job 
+
+tail slurm-340.out # tail watches end of file (last 10 lines)
+tail -f slurm-340.out #last 10 lines + more added as it is created 
+```
+
+# Activity 2 
+Monitor running jobs
+
+slurm script large
+```{bash}
+sbatch run_flye_large.sh #job 351 
+squeue #check status of job
+
+tail slurm-xxx.out # tail watches end of file (last 10 lines)
+tail -f slurm-xxx.out #last 10 lines + more added as it is created 
+
+#stop tail using control C
+
+```
+
+## Assemble stats
+Assess assemblies made using Flye
+```{bash}
+cd amtp4
+assembly-stats asssembly.fasta #small
+```
+stats for assembly.fasta
+sum = 5172040, n = 77, ave = 67169.35, largest = 368943
+N50 = 119681, n = 16
+N60 = 99731, n = 20
+N70 = 73541, n = 26
+N80 = 48063, n = 35
+N90 = 31251, n = 48
+N100 = 2777, n = 77
+N_count = 0
+Gaps = 0
+
+```{bash}
+cd amtp4_20x
+assembly-stats assembly.fasta #large
+```
+Output (large)
+sum = 7473606, n = 54, ave = 138400.11, largest = 3378256
+N50 = 1775265, n = 2
+N60 = 1775265, n = 2
+N70 = 113574, n = 3
+N80 = 71198, n = 12
+N90 = 44111, n = 25
+N100 = 4044, n = 54
+N_count = 0
+Gaps = 0
 
 # Bandage 
 Depth - average number of reads that cover a given region of the genome sequence e.g., 50x or 100x coverage
@@ -124,6 +176,9 @@ contig: xxxxxxxxxx
 depth = 3, contig = 1
 
 repeat: central or around circle, other contigs "pass through"
+
+# Activity 3
+Inspect low coverage flye assembly with Bandage
 
 ## Assembly graphs with Bandage
 ```{bash}
