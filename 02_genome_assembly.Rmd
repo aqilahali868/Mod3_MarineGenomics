@@ -181,9 +181,30 @@ repeat: central or around circle, other contigs "pass through"
 Inspect low coverage flye assembly with Bandage
 
 ## Assembly graphs with Bandage
-```{bash}
 
-```
+download amtp4/assembly_graph.gfa
+Load graph into Bandage  
+
+1. Biologically distinct entities such as chromosomes or plasmids will form separate graphs
+2. Separated graphs can also occur if coverage is very low and no reads exist to join parts of the assembly together
+3. Highly joined regions (eg top left) tend to occur because repeats create ambiguities. There are too many connections and the assembler has trouble choosing the correct path between them.
+
+# Activity 4
+Inspect high coverage flye assembly with Bandage
+download amtp4_20x/assembly_graph.gfa
+Load graph into Bandage 
+
+Can you spot the same repeat region? 
+repeat region in small connected to multiple chromosomes but only connects 1 chromosome in the larger 
+
+How has increased coverage changed the appearance of the assembly.
+increased coverage clearly defined the chromosomes more
+
+Which contigs look like fully assembled chromosomes? 
+first 2 lines? longer assemblies
+
+Which ones look like plasmids?
+last few lines? very short assemblies
 
 ## Assembly quality with QUAST
 
