@@ -22,6 +22,68 @@ R chunks in this file run from the top of the repository, so give file paths fro
 ## Step 1: Examine reads
 
 Reads are linked into `raw_data/`.
+```{bash}
+#Symbolic link to raw reads file 
+cd ~/mb5370-workshops/raw_data
+ln -s /pvol/data/metagenome_assembly/reads_R10_0.5.fastq.gz raw_reads.fastq.gz
+
+#change directory to raw_data
+cd ..
+pwd
+
+#check link  (-l) shows extende details on each file - see source and target paths for the symbolic link
+ls -l raw_data #total 0
+
+```
+
+Read Length Distribution 
+```{bash}
+zcat raw_reads.fastq.gz | head -n 40000 | bioawk -c fastx '{print $name,length($seq)}' > read_lengths.txt
+
+```
+
+```{bash}
+
+ #FOR EXPLANATORY PURPOSES
+# Unzips the raw data and sends the data to standard output
+zcat raw_data/raw_reads.fastq.gz \
+# This is a pipe. It sends output from the previous command as input to the next command
+  | \
+# Here we select only the top 40k lines in the file. This equates to 10k reads. It should be plenty to get some stats
+  head -n 40000 | \
+# This is a small bioawk program. It prints the name of each sequence followed by its length
+  bioawk -c fastx '{print $name,length($seq)}' \
+# Send outputs to a file called read_lengths.txt
+  > read_lengths.txt
+```
+
+```{r}
+
+library(tidyverse)
+
+rl_data <- read_tsv("read_lengths.txt",col_names = c("id","length"), show_col_types = FALSE)
+
+ggplot(rl_data, aes(x=length/1000)) + 
+  geom_histogram(binwidth = 2) +
+  xlab("Read Length Kb") + ylab("Number of Reads")
+
+#Figure 1: Histogram of read lengths in the mockl nanopore sequencing dataset
+```
+Calculating read N50
+From this plot it is clear that the majority of reads are between 1 and 50kb in length. A good way to summarise this is the N50 statistic. Although N50 is most often used to summarise genome assemblies it’s also very useful for summarising read length distributions. The reason this statistic is useful is because it is unaffected by having a large number of tiny reads and instead places greatest emphasis on the longer reads in the data. Let’s calculate the read N50 for our sample of reads. The method we will use to calculate N50 is described by the following pseudo-code
+
+Step 1: Rank all reads from longest to shortest
+Step 2: Create a new column with the cumulative sum of read lengths (starting from longest read).
+Step 3: Find the read at which the cumulative sum surpasses 50% of the total read volume (ie total sum of all read lengths)
+```{r}
+total_len <- sum(rl_data$length)
+
+rl_data |> 
+  arrange(desc(length)) |> 
+  mutate(cumsum = cumsum(length)) |> 
+  filter(cumsum>total_len/2) |> 
+  head(n=1)
+```
 
 ## Step 2: Assembly
 
