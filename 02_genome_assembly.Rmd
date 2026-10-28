@@ -262,10 +262,63 @@ Inspect quast outputs
  
 Both assemblers seem to have done a very good job of assembling the genome but both have produced regions where there are a large number of small differences (snps and indels) between the assembly and the reference. The redbean assembly also seems to have a couple of gaps which most likely correspond with the highly repetitive region we observed in the Bandage visualisation.
 
-## (Optional)Mystery repeat region (optional)
+# Mystery repeat region (optional)
+Bandage - contains repeat region
 
-Commands run in `repeat/`.
 ```{bash}
-
+#set directory 
+cd repeat
+pwd
 ```
 
+## Extract repeat region 
+1. copy node sequence from Bandage
+2. paste into plain text file
+3. add header: >repeat_1
+4. save as: repeat/repeat.fasta
+
+```{bash}
+#run prokka on repeat sequecnce for transcribed sequences
+prokka --outdir prokka --prefix repeat repeat.fasta
+
+# assess .tsv file 
+cat prokka/repeat.tsv
+```
+What type of genomic features dominate this sequence?
+ribosomal RNA  dominate sequence (3 contigs with the longest length_bp)
+
+## Genomic Arrangement of repeats
+Arrangement in tandem or dispersed throughout genome?
+1. Map repeat sequence back to genome (minimap2 - long reads/DNA seq)
+
+Run the alignment
+```{bash}
+#link data
+ln -s ../quast/vibrio/virbio.fna .
+
+#run minimap2
+minimap2 -x map-ont vibrio.fna repeat.fasta > repeat_vs_genome.paf
+```
+
+## Examine alignment (paf)
+
+```{bash}
+#general format
+head repeat_vs_genome.paf
+
+#specifying columns based on start and end points 
+# extract columns into bed formatted file
+cat repeat_vs_genome.paf | grep '^repe' | awk -F '\t' '{print $6,$8,$9}' > repeat_locations.bed
+
+head repeat_locations.bed
+```
+Output: 
+tig00000584 1273374 1279037 
+tig00000584 1083791 1089324 
+tig00000584 1167693 1173227
+tig00000584 839538 845049
+tig00000584 1365774 1371286
+tig00000584 1360526 1365767
+
+Question?: Is this a tandem repeat or interspersed?
+Since bp lengths are so similar I think it is a tandem repeat 

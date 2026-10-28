@@ -122,7 +122,7 @@ tail -f slurm-381.out
 
 # Activity 2
 Flye will report the read N50. How does this compare with the value we computed earlier?
-N50 
+N50 .....
 
 # Activity 3
 Visualise assembly in Bandage
@@ -280,13 +280,90 @@ Think about what this plot tells us about the value of sequencing depth to metag
 Figure: Effect of sequencing volume on assembly completeness. Solid black line along the top represents the size of the reference. Purple points represent the 50Gb assembly from this tutorial. Line colours differentiate between total (sum of all contigs) and top11 (sum of only the longest 11 contigs). Note that there are 11 sequences in the reference (7 chromosomes and 4 plasmids).
 
 # Step 4: Binning
-```{bash}
+Searating sequences
+1. Read binning tools which group the raw (unassembled) reads
+2. Contig binning tools which group assembled contigs
+Outputs are "bins" containing multiple distinct sequences (read and contigs) from same organism. 
+Errors in bins include: 
+1. Contamination - Placing two sequences together when they come from different taxa 
+2. Fragmentation - Failing to group sequences that come from the same taxon
 
+Binning Use: metaFlye with long-reads to output high quality contigs from mixed collection of reads
+Program: metabat2 - groups contigs based on nucleotide composition and read coverage (e.g., tertanucleotide frequency instead of just GC content)
+
+Using coverage info calculated by flye
+```{bash}
+#set directory
+cd metabat
+pwd
+
+#create input file summarising read depth info for all contigs - depth.txt
+cat ../flye_metagenome/mock/assembly_info.txt  | grep -v '#' | awk '{OFS="\t";print $1,$3}' > depths.txt
+
+#create file matching contig order of depth.txt - assembly_ordered.fasta
+#samtools faidx - extracts entries from a fasta file in a specified order
+cat depths.txt | awk '{print $1}' | xargs samtools faidx ../flye_metagenome/mock/assembly.fasta > assembly_ordered.fasta
+
+#run metabat
+metabat2 -i assembly_ordered.fasta -a depths.txt --cvExt -o bins/metabat --seed 5
+
+#inspect contigs 
+grep '>' bins/*
 ```
+Output: metabat bins (3-8) 
+largest and highest coverage contigs not included e.g., 2 and 40
+
 
 # Step 5: Bin quality with CheckM
+Each bin represent sa single species or strain within the community
+Goal: create bins which:
+1. Contain complete sequences for this organism
+2. All come from the same organism (not contaminated with sequences from other taxa)
+
 ```{bash}
 
-```
+#set directory
+cd ..
+cd checkm
+pwd
 
+#create input files (copied metabat bins to checkm)
+cp ../metabat/bins/metabat.*.fa bins/
+
+#include longest contig (contig_40) into checkm/bins 
+samtools faidx ../flye_metagenome/mock/assembly.fasta contig_40 > bins/contig_40.fa
+
+#run checkm workflow using slurm script
+sbatch run_checkm.sh #job 390
+tail -f slurm-390.out #track pogress
+
+```
+## Check results 
+ - checkm_results.txt (summary for each bin)
+ Including: 
+
+1. Marker Lineage: An approximate taxonomic classification. This is used by checkM to determine which marker genes to use for completeness and contamination checks
+
+2. # genomes: number of reference genomes used to infer marker set
+
+3. # markers: number of inferred marker genes
+
+4. # marker sets: number of inferred co-located marker sets
+
+5. 0-5+: number of times each marker gene is identified
+
+6. Completeness: estimated completeness. This is calculated by taking the number of marker genes appearing exactly 1 time and dividing by the total
+
+7. Contamination: estimated contamination. This is the number of marker genes appearing >1 times divided by the total
+
+8. Strain heterogeneity: estimated strain heterogeneity. This is calculated by examining the marker genes appearing >1 times and determining the proportion of these that are from the same or very similar organisms (strains).
+
+Question 3.6
+Which bin shows strain heterogeneity and why?
+Strain het = 31.25 in  metabat.8  f__Vibrionaceae (UID4865) and contamination = 0.62 (highest of all metabat sequences)
+All other bins contain 0 strain heterogeneity 
+
+Potentially due to contamination or plasmid genetic materials
+However contig_40 contained the highest level of contamination = 0.71
+ 
 
