@@ -199,6 +199,7 @@ repeat region in small connected to multiple chromosomes but only connects 1 chr
 
 How has increased coverage changed the appearance of the assembly.
 increased coverage clearly defined the chromosomes more
+improved contiguity and completion
 
 Which contigs look like fully assembled chromosomes? 
 first 2 lines? longer assemblies
@@ -208,12 +209,60 @@ last few lines? very short assemblies
 
 ## Assembly quality with QUAST
 
-Commands run in `quast/`.
+Move to the QUAST folder
 ```{bash}
-
+cd ..
+cd quast
+pwd
 ```
 
-## Mystery repeat region (optional)
+Prepare Flye assembly data 
+```{bash}
+#look at contig size in flye assembly 
+cat ../flye_genome/amtp4_20x/assembly.fasta | bioawk -c fastx '{print $name, length($seq)}' | sort -n -k2
+```
+2 largest contigs: 
+contig_3        1775265
+contig_15       3378256
+
+```{bash}
+#extract 2 largest contigs from assembly
+samtools faidx ../flye_genome/amtp4_20x/assembly.fasta contig_3 contig_15 > flye_asm/vibrio.fasta
+```
+
+Prepare Redbean assembly
+```{bash}
+#look at contig size in flye assembly 
+cat ../redbean/amtp4_20x.ctg.fa | bioawk -c fastx '{print $name, length($seq)}' | sort -n -k2
+
+```
+2 largest contigs: 
+ctg2    1764934
+ctg1    3342848
+
+```{bash}
+#extract 2 largest contigs from assembly
+samtools faidx ../redbean/amtp4_20x.ctg.fa ctg2 ctg1 > redbean_asm/vibrio.fasta
+```
+
+Create a symbolic link to the original reads
+```{bash}
+ln -s ../flye_genome/amtp4_20x.fastq .
+ln -s /pvol/data/amtp4/reference/vibrio .
+```
+
+Run QUAST
+```{bash}
+quast -o quast_vibrio redbean_asm/vibrio.fasta flye_asm/vibrio.fasta -L -t 4 --circos --glimmer -r vibrio/vibrio.fna --features  vibrio/vibrio.gff --nanopore amtp4_20x.fastq
+```
+# Activity 5 
+Inspect quast outputs
+ 1 Main report.html
+ 2. circos plot in circos/circos.png
+ 
+Both assemblers seem to have done a very good job of assembling the genome but both have produced regions where there are a large number of small differences (snps and indels) between the assembly and the reference. The redbean assembly also seems to have a couple of gaps which most likely correspond with the highly repetitive region we observed in the Bandage visualisation.
+
+## (Optional)Mystery repeat region (optional)
 
 Commands run in `repeat/`.
 ```{bash}
