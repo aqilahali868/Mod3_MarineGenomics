@@ -69,8 +69,11 @@ ggplot(rl_data, aes(x=length/1000)) +
 
 #Figure 1: Histogram of read lengths in the mockl nanopore sequencing dataset
 ```
-Calculating read N50
-From this plot it is clear that the majority of reads are between 1 and 50kb in length. A good way to summarise this is the N50 statistic. Although N50 is most often used to summarise genome assemblies it’s also very useful for summarising read length distributions. The reason this statistic is useful is because it is unaffected by having a large number of tiny reads and instead places greatest emphasis on the longer reads in the data. Let’s calculate the read N50 for our sample of reads. The method we will use to calculate N50 is described by the following pseudo-code
+From this plot it is clear that the majority of reads are between 1 and 50kb in length. A good way to summarise this is the N50 statistic. 
+
+# Calculating read N50
+Although N50 is most often used to summarise genome assemblies it’s also very useful for summarising read length distributions. The reason this statistic is useful is because it is unaffected by having a large number of tiny reads and instead places greatest emphasis on the longer reads in the data. 
+Let’s calculate the read N50 for our sample of reads. The method we will use to calculate N50 is described by the following pseudo-code
 
 Step 1: Rank all reads from longest to shortest
 Step 2: Create a new column with the cumulative sum of read lengths (starting from longest read).
@@ -79,15 +82,87 @@ Step 3: Find the read at which the cumulative sum surpasses 50% of the total rea
 total_len <- sum(rl_data$length)
 
 rl_data |> 
-  arrange(desc(length)) |> 
-  mutate(cumsum = cumsum(length)) |> 
-  filter(cumsum>total_len/2) |> 
+  arrange(desc(length)) |>            #rank reads
+  mutate(cumsum = cumsum(length)) |>  #cumulative sum
+  filter(cumsum>total_len/2) |>       #^ pass 50% total vol
   head(n=1)
 ```
+
+# Activity: 6
+ Pick apart and understand the code below
+```{bash}
+## # A tibble: 1 × 3
+##   id                                        length   cumsum
+##   <chr>                                      <dbl>    <dbl>
+## 1 c96c1300-8177-e260-d9bd-2fdf75d0146b_2040  22322 74486252
+```
+Break up the code in the snippet above.
+id: read idenificatino number
+length: base pair length of longest read
+cumsum: cumulative sum of read lengths
+Start by removing all pipes and slowly add them back, looking at the data each time. Make sure you understand what the code is doing.
+
+We see here that the N50 of the individual reads is about 22Kb (length = 22,322). Keep this in mind as we perform assembly. We expect that the N50 of our assembly should be considerably greater than this.
 
 ## Step 2: Assembly
 
 Commands run in `flye_metagenome/`.
+```{bash}
+cd ..
+cd flye_metagenome
+pwd
+```
+
+Slurm script 
+```{bash}
+sbatch run_flye.sh
+tail -f slurm-381.out
+
+```
+
+# Activity 7
+Flye will report the read N50. How does this compare with the value we computed earlier?
+
+# Activity 8
+Visualise assembly in Bandage
+Question 3.1
+What is the size and coverage of the largest contig in the assembly?
+
+Question 3.2
+Your assembly should contain at least one (probably several) large circular contigs. Based on size and coverage can you guess which contig corresponds to the genome of the most abundant species in our mock community?
+
+Question 3.3
+Locate two circular chromosomes for Vibrio alfacsensis in bandage.(Use the outputs from gc.awk to help with this).
+
+# Chromosome lengths and GC content in the reference data
+In DNA, guanine always pairs with cytosine through three hydrogen bonds, whereas adenine (A) pairs with thymine (T) through two hydrogen bonds
+G-C pairs have three hydrogen bonds instead of two, DNA regions with a higher GC content are more thermally stable and have a higher melting temperature (essential for PCRs involving melting and annealing)
+
+Code for bioawk program calculating GC content and size
+Plain text file: gc.awk
+
+```{bash}
+#reference genomes for mock community
+ls /pvol/data/mg/refs/*.fna
+```
+
+Test awk program 
+```{bash}
+cd ~/mb5370-workshops
+cat /pvol/data/mg/refs/*.fna | bioawk -c fastx -f gc.awk
+```
+Output:
+CP003591.1      4681111 0.584631
+CP045504.1      4388462 0.636383
+CP045505.1      51725   0.578966
+AP024165.1      3168162 0.44373
+AP024166.1      1553697 0.438144
+AP024167.1      320083  0.418301
+AP024168.1      221076  0.434733
+CP098033.1      1819821 0.445875
+CP098034.1      3294375 0.447314
+CP098035.1      36224   0.485231
+NZ_CP053351.1   4560973 0.34633
 
 ## Step 3: Basic assembly QC
 
